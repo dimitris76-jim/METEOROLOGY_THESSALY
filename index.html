@@ -81,6 +81,67 @@ button.active{background:#2a6b4a;border-color:#3d8f62}
 .foot{margin-top:14px;color:var(--muted);font-size:11px;text-align:center}
 .loading{opacity:.55;pointer-events:none}
 .wcode{font-size:20px;line-height:1}
+
+.simple-summary{
+  background:linear-gradient(135deg,#0c1e33,#102840);
+  border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:14px;
+}
+.simple-summary h2{margin:0 0 10px;font-size:15px;color:var(--cyan)}
+.ss-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+@media(max-width:900px){.ss-grid{grid-template-columns:1fr}}
+.ss-card{background:#071525;border:1px solid #29445f;border-radius:10px;padding:12px 14px}
+.ss-card .label{font-size:11px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em}
+.ss-card .main{font-size:22px;font-weight:800;line-height:1.2}
+.ss-card .sub{font-size:12px;color:var(--text);margin-top:6px;line-height:1.45}
+.ss-card.risk-low .main{color:var(--risk-low)}
+.ss-card.risk-mod .main{color:var(--risk-mod)}
+.ss-card.risk-high .main{color:var(--risk-high)}
+.ss-card.risk-ext .main{color:var(--risk-ext)}
+.ss-days{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.ss-day{background:#0a1a2c;border:1px solid #29445f;border-radius:8px;padding:6px 8px;min-width:72px;text-align:center;font-size:11px}
+.ss-day b{display:block;font-size:13px;margin:2px 0}
+.ss-day .p{color:var(--muted)}
+.ss-day .rain{color:var(--risk-high);font-weight:700}
+
+.ss-conds{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.ss-chip{font-size:11px;padding:3px 8px;border-radius:999px;border:1px solid #29445f;background:#0a1a2c}
+.ss-chip.ok{border-color:#2f5a42;color:var(--risk-low)}
+.ss-chip.warn{border-color:#8a6a20;color:var(--risk-mod)}
+.ss-chip.cold{border-color:#3a6a9a;color:#7ec8ff}
+.ss-chip.hot{border-color:#8a4020;color:var(--risk-high)}
+.ss-chip.fog{border-color:#6a6a7a;color:#c8c8d8}
+.ss-chip.snow{border-color:#6a8aaa;color:#d0e8ff}
+.ss-chip.rain{border-color:#2a5a8a;color:#6ab0e8}
+
+
+
+.models-wrap{overflow-x:auto}
+.models-table{width:100%;border-collapse:collapse;font-size:11px}
+.models-table th,.models-table td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:center;white-space:nowrap}
+.models-table th{color:var(--muted);font-weight:600;background:#0a1a2c}
+.models-table td:first-child,.models-table th:first-child{text-align:left;font-weight:700}
+.models-table .m-name{color:var(--cyan)}
+.models-table .precip-pos{color:var(--risk-high);font-weight:700}
+.models-table .agree{color:var(--risk-low)}
+.models-note{font-size:10px;color:var(--muted);margin-top:8px;line-height:1.4}
+.models-status{font-size:11px;color:var(--muted);margin-bottom:6px}
+
+
+.marker-risk{
+  width:28px;height:28px;border-radius:50%;border:2px solid #fff;
+  box-shadow:0 1px 6px rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:800;color:#071525;cursor:pointer;
+}
+.marker-risk.sel{outline:3px solid var(--cyan);outline-offset:2px}
+.map-legend{
+  position:absolute;z-index:500;left:11px;top:11px;
+  background:#071525e8;border:1px solid #45627e;padding:8px 10px;border-radius:8px;
+  color:#dceafa;font-size:10px;line-height:1.5;max-width:160px;
+}
+.map-legend b{display:block;margin-bottom:4px;font-size:11px}
+.map-legend .row{display:flex;align-items:center;gap:6px;margin:2px 0}
+.map-legend i{width:10px;height:10px;border-radius:50%;display:inline-block;border:1px solid #fff3}
+
 .layers{display:grid;grid-template-columns:1fr 1fr;gap:7px}
 .layer{background:#0b1c2d;border:1px solid var(--line);padding:8px 9px;border-radius:7px;display:flex;gap:7px;align-items:center;font-size:12px;cursor:pointer}
 .layer input{accent-color:var(--cyan)}
@@ -136,7 +197,30 @@ button.active{background:#2a6b4a;border-color:#3d8f62}
 
 <main>
   <div class="notice">
-    <b>v0.2:</b> Ευαίσθητα κατώφλια ανά λεκάνη + εποχιακή προσαρμογή · Ιστορικός υετός 7 ημερών · Animation radar frames · Σύγκριση σημείων · localStorage.
+    <b>v0.2:</b> Ανοίξτε το dashboard → δείτε αμέσως καιρό σήμερα, 7 ημέρες και κίνδυνο πλημμύρας.
+  </div>
+
+  <div class="simple-summary" id="simpleSummary">
+    <h2>Με μια ματιά — <span id="ssPlace">—</span></h2>
+    <div class="ss-grid">
+      <div class="ss-card" id="ssToday">
+        <div class="label">Σήμερα</div>
+        <div class="main" id="ssTodayMain">—</div>
+        <div class="sub" id="ssTodaySub">Φόρτωση δεδομένων…</div>
+        <div class="ss-conds" id="ssConds"></div>
+      </div>
+      <div class="ss-card" id="ssRiskCard">
+        <div class="label">Κίνδυνος πλημμύρας</div>
+        <div class="main" id="ssRiskMain">—</div>
+        <div class="sub" id="ssRiskSub">Φόρτωση…</div>
+      </div>
+      <div class="ss-card" id="ssWeek">
+        <div class="label">Επόμενες 7 ημέρες</div>
+        <div class="main" id="ssWeekMain">—</div>
+        <div class="sub" id="ssWeekSub">Φόρτωση…</div>
+        <div class="ss-days" id="ssDays"></div>
+      </div>
+    </div>
   </div>
 
   <section class="metrics" id="topMetrics">
@@ -181,6 +265,14 @@ button.active{background:#2a6b4a;border-color:#3d8f62}
       </div>
       <div class="mapwrap">
         <div id="map"></div>
+        <div class="map-legend" id="mapLegend">
+          <b>Κίνδυνος στον χάρτη</b>
+          <div class="row"><i style="background:var(--risk-low)"></i> Χαμηλός</div>
+          <div class="row"><i style="background:var(--risk-mod)"></i> Μέτριος</div>
+          <div class="row"><i style="background:var(--risk-high)"></i> Υψηλός</div>
+          <div class="row"><i style="background:var(--risk-ext)"></i> Πολύ υψηλός</div>
+          <div class="row" style="margin-top:4px;color:var(--muted)">Κλικ = επιλογή · μέγεθος ≈ score</div>
+        </div>
         <div class="maptag">OpenStreetMap · Radar: RainViewer · Δεδομένα: Open-Meteo</div>
         <div class="radar-ctrl" id="radarCtrl">
           <button onclick="radarPrev()">◀</button>
@@ -326,6 +418,28 @@ button.active{background:#2a6b4a;border-color:#3d8f62}
         <div class="panelhead"><h2>Πρόγνωση 7 ημερών</h2><span class="sub">Open-Meteo</span></div>
         <div class="content"><div class="forecast" id="dailyBox"></div></div>
       </div>
+
+      <div class="panel" id="modelsPanel">
+        <div class="panelhead">
+          <h2>Σύγκριση μοντέλων</h2>
+          <span class="sub">ECMWF · ICON · GFS · blend</span>
+        </div>
+        <div class="content">
+          <div class="models-status" id="modelsStatus">Φόρτωση μοντέλων…</div>
+          <div class="models-wrap">
+            <table class="models-table" id="modelsTable">
+              <thead><tr><th>Μοντέλο</th><th colspan="3">Σήμερα</th><th colspan="3">Αύριο</th><th colspan="3">Μεθαύριο</th></tr>
+              <tr><th></th><th>Max</th><th>Min</th><th>Υετός</th><th>Max</th><th>Min</th><th>Υετός</th><th>Max</th><th>Min</th><th>Υετός</th></tr></thead>
+              <tbody id="modelsBody"><tr><td colspan="10">—</td></tr></tbody>
+            </table>
+          </div>
+          <div class="models-note">
+            Πηγή: Open-Meteo API ανά μοντέλο. Το <b>blend</b> είναι το προεπιλεγμένο (best match).
+            Διαφορές 1–2 °C είναι φυσιολογικές. Σε ισχυρό υετό δώστε βάση στο ECMWF / ICON-EU.
+            Αν εμφανιστεί rate-limit, δοκιμάστε αργότερα.
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -392,7 +506,7 @@ function getSeasonal() {
 
 
 
-let map, markers = [], currentIdx = 0, autoTimer = null, lastData = null;
+let map, markers = [], markerMeta = [], currentIdx = 0, autoTimer = null, lastData = null, allRiskCache = {};
 let radarLayer = null, radarOn = false, radarHost = null;
 let radarFrames = [], radarFrameIdx = 0, radarPlayTimer = null;
 
@@ -404,22 +518,81 @@ function savePrefs(patch) {
   localStorage.setItem(LS_KEY, JSON.stringify({ ...loadPrefs(), ...patch }));
 }
 
+function riskColor(score) {
+  if (score >= 60) return '#ef6464';
+  if (score >= 35) return '#f4a340';
+  if (score >= 18) return '#e8c547';
+  return '#56c596';
+}
+function riskSize(score) {
+  return Math.max(22, Math.min(40, 20 + score * 0.22));
+}
+
+function makeRiskIcon(score, selected) {
+  const s = riskSize(score == null ? 0 : score);
+  const col = score == null ? '#9eb2c8' : riskColor(score);
+  const label = score == null ? '·' : String(Math.round(score));
+  const sel = selected ? ' sel' : '';
+  const html = '<div class="marker-risk'+sel+'" style="width:'+s+'px;height:'+s+'px;background:'+col+'">'+label+'</div>';
+  return L.divIcon({ className: '', html: html, iconSize: [s, s], iconAnchor: [s/2, s/2], popupAnchor: [0, -s/2] });
+}
+
 function initMap() {
   map = L.map('map', { scrollWheelZoom: true }).setView([39.55, 22.15], 8);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 18, attribution: '&copy; OpenStreetMap'
   }).addTo(map);
   places.forEach((p, i) => {
-    const m = L.marker([p.lat, p.lon]).addTo(map);
-    m.bindPopup('<b>'+p.name+'</b><br>'+p.pe);
+    const m = L.marker([p.lat, p.lon], { icon: makeRiskIcon(null, i === currentIdx) }).addTo(map);
+    m.bindPopup('<b>'+p.name+'</b><br>'+p.pe+'<br><small>'+p.basin+'</small>');
     m.on('click', () => {
       document.getElementById('locSelect').value = i;
       onLocationChange();
     });
     markers.push(m);
+    markerMeta.push({ idx: i });
   });
 }
 function resetMap() { map.setView([39.55, 22.15], 8); }
+
+function updateMarker(i, risk, current) {
+  const p = places[i];
+  const score = risk ? risk.score : null;
+  const m = markers[i];
+  m.setIcon(makeRiskIcon(score, i === currentIdx));
+  let html = '<b>'+p.name+'</b><br>'+p.pe+'<br><small>'+p.basin+' · ×'+p.sensitivity.toFixed(2)+'</small>';
+  if (risk) {
+    html += '<br><hr style="border-color:#29445f;margin:6px 0">';
+    html += '<span style="color:'+risk.color+'"><b>'+risk.level+'</b> ('+risk.score+'/100)</span>';
+    html += '<br><small>12ω: '+risk.sum12+' mm · 7ημ: '+risk.past7+' mm</small>';
+    html += '<br><small>'+risk.seasonName+' ×'+risk.seasonalMult.toFixed(2)+'</small>';
+  }
+  if (current) {
+    html += '<br><small>Θερμ. '+Math.round(current.temperature_2m)+'°C · Άνεμος '+Math.round(current.wind_speed_10m||0)+' km/h</small>';
+  }
+  m.bindPopup(html);
+  allRiskCache[i] = risk;
+}
+
+async function refreshAllMapRisks() {
+  // Fetch lightweight risk for all places and update markers
+  try {
+    const jobs = places.map(async (p, i) => {
+      const url = 'https://api.open-meteo.com/v1/forecast?latitude='+p.lat+'&longitude='+p.lon+
+        '&current=temperature_2m,wind_speed_10m'+
+        '&hourly=precipitation,precipitation_probability'+
+        '&daily=precipitation_sum,precipitation_probability_max'+
+        '&past_days=7&timezone=Europe%2FAthens&forecast_days=2';
+      const res = await fetch(url);
+      if (!res.ok) return;
+      const data = await res.json();
+      const risk = computeFloodRisk(data.hourly, data.daily, p.sensitivity);
+      updateMarker(i, risk, data.current);
+    });
+    await Promise.all(jobs);
+  } catch (e) { console.warn('map risk refresh', e); }
+}
+
 
 function windDir(deg) {
   const dirs = ['Β','ΒΒΑ','ΒΑ','ΑΒΑ','Α','ΑΝΑ','ΝΑ','ΝΝΑ','Ν','ΝΝΔ','ΝΔ','ΔΝΔ','Δ','ΔΒΔ','ΒΔ','ΒΒΔ'];
@@ -692,6 +865,222 @@ async function runComparison() {
 }
 
 /* ---------- Main weather ---------- */
+
+const MODELS = [
+  { id: null, label: 'Blend (best match)' },
+  { id: 'ecmwf_ifs025', label: 'ECMWF IFS' },
+  { id: 'icon_eu', label: 'ICON-EU' },
+  { id: 'icon_global', label: 'ICON Global' },
+  { id: 'gfs_seamless', label: 'NOAA GFS' }
+];
+
+async function fetchOneModel(p, modelId) {
+  let url = 'https://api.open-meteo.com/v1/forecast?latitude=' + p.lat + '&longitude=' + p.lon +
+    '&daily=temperature_2m_max,temperature_2m_min,precipitation_sum' +
+    '&timezone=Europe%2FAthens&forecast_days=3';
+  if (modelId) url += '&models=' + modelId;
+  const res = await fetch(url);
+  if (!res.ok) {
+    const err = new Error('HTTP ' + res.status);
+    err.status = res.status;
+    throw err;
+  }
+  return res.json();
+}
+
+async function loadModelsComparison(idx) {
+  const status = document.getElementById('modelsStatus');
+  const body = document.getElementById('modelsBody');
+  if (!status || !body) return;
+  const p = places[idx];
+  status.textContent = 'Φόρτωση μοντέλων για ' + p.name + '…';
+  body.innerHTML = '<tr><td colspan="10">Φόρτωση…</td></tr>';
+
+  const rows = [];
+  let rateLimited = false;
+
+  // sequential with small delay to reduce rate-limit risk
+  for (const m of MODELS) {
+    try {
+      await new Promise(r => setTimeout(r, 400));
+      const data = await fetchOneModel(p, m.id);
+      const d = data.daily;
+      const cells = [];
+      for (let i = 0; i < 3; i++) {
+        const mx = d.temperature_2m_max[i];
+        const mn = d.temperature_2m_min[i];
+        const pr = d.precipitation_sum[i];
+        const prCls = pr > 0.2 ? 'precip-pos' : '';
+        cells.push(
+          '<td>' + (mx != null ? Math.round(mx) + '°' : '—') + '</td>' +
+          '<td>' + (mn != null ? Math.round(mn) + '°' : '—') + '</td>' +
+          '<td class="' + prCls + '">' + (pr != null ? pr.toFixed(1) + ' mm' : '—') + '</td>'
+        );
+      }
+      rows.push('<tr><td class="m-name">' + m.label + '</td>' + cells.join('') + '</tr>');
+    } catch (e) {
+      if (e.status === 429) rateLimited = true;
+      rows.push('<tr><td class="m-name">' + m.label + '</td><td colspan="9">Μη διαθέσιμο' + (e.status === 429 ? ' (rate limit)' : '') + '</td></tr>');
+    }
+  }
+
+  body.innerHTML = rows.join('');
+  if (rateLimited) {
+    status.textContent = 'Μερικά μοντέλα δεν φορτώθηκαν (Open-Meteo rate limit). Δοκιμάστε αργότερα.';
+    status.style.color = 'var(--risk-mod)';
+  } else {
+    status.textContent = 'Σύγκριση για ' + p.name + ' · ενημερώθηκε ' + new Date().toLocaleTimeString('el-GR');
+    status.style.color = '';
+  }
+}
+
+
+function describeConditions(c, d, todayIdx) {
+  const chips = [];
+  const code = c.weather_code;
+  const tmin = d.temperature_2m_min ? d.temperature_2m_min[todayIdx] : null;
+  const tmax = d.temperature_2m_max ? d.temperature_2m_max[todayIdx] : null;
+  const tnow = c.temperature_2m;
+  const rain = d.precipitation_sum ? (d.precipitation_sum[todayIdx] || 0) : 0;
+
+  // Frost
+  if (tmin != null && tmin <= 0) {
+    chips.push({ text: 'Παγετός (ελάχ. ' + Math.round(tmin) + '°)', cls: 'cold' });
+  } else if (tmin != null && tmin <= 3) {
+    chips.push({ text: 'Κίνδυνος παγετού το πρωί', cls: 'warn' });
+  }
+
+  // Snow / sleet from WMO
+  // 71-77 snow, 85-86 snow showers, 66-67 freezing rain, 56-57 freezing drizzle
+  if ([71,72,73,74,75,76,77,85,86].includes(code)) {
+    chips.push({ text: 'Χιόνι', cls: 'snow' });
+  } else if ([66,67,56,57].includes(code)) {
+    chips.push({ text: 'Παγωμένη βροχή', cls: 'cold' });
+  }
+
+  // Fog / mist: 45, 48
+  if (code === 45 || code === 48) {
+    chips.push({ text: code === 48 ? 'Ομίχλη με πάγο' : 'Ομίχλη', cls: 'fog' });
+  }
+
+  // Thunder
+  if ([95,96,97,98,99].includes(code)) {
+    chips.push({ text: 'Καταιγίδα', cls: 'hot' });
+  }
+
+  // Rain intensity
+  if ([61,63,65,80,81,82].includes(code) || rain >= 5) {
+    chips.push({ text: rain >= 10 ? 'Ισχυρή βροχή' : 'Βροχή', cls: 'rain' });
+  } else if ([51,53,55].includes(code) || (rain > 0.2 && rain < 5)) {
+    chips.push({ text: 'Ψιχάλα / ασθενής βροχή', cls: 'rain' });
+  }
+
+  // Heat / cold extremes for the day
+  if (tmax != null && tmax >= 35) chips.push({ text: 'Πολύ ζεστό', cls: 'hot' });
+  else if (tmax != null && tmax >= 30) chips.push({ text: 'Ζεστό', cls: 'hot' });
+  if (tnow <= 0) chips.push({ text: 'Θερμοκρασία υπό το μηδέν', cls: 'cold' });
+
+  // Clear / clouds simple
+  if ([0,1].includes(code) && !chips.some(x => x.cls === 'rain' || x.cls === 'snow')) {
+    chips.push({ text: code === 0 ? 'Αίθριος' : 'Σχεδόν αίθριος', cls: 'ok' });
+  } else if ([2,3].includes(code) && chips.length === 0) {
+    chips.push({ text: code === 2 ? 'Αραιή συννεφιά' : 'Νεφελώδης', cls: 'ok' });
+  }
+
+  if (chips.length === 0) chips.push({ text: 'Ήπιες συνθήκες', cls: 'ok' });
+  return chips;
+}
+
+function renderSimpleSummary(idx, data, risk) {
+  const p = places[idx];
+  const c = data.current;
+  const d = data.daily;
+  const todayIdx = 7;
+
+  document.getElementById('ssPlace').textContent = p.name;
+
+  const temp = Math.round(c.temperature_2m);
+  const feels = Math.round(c.apparent_temperature);
+  const wind = Math.round(c.wind_speed_10m || 0);
+  const hum = c.relative_humidity_2m;
+  const code = c.weather_code;
+  const wtxt = (WMO[code] ? WMO[code][1] : '') || '';
+  const tmax = d.temperature_2m_max ? d.temperature_2m_max[todayIdx] : null;
+  const tmin = d.temperature_2m_min ? d.temperature_2m_min[todayIdx] : null;
+  const rainToday = d.precipitation_sum ? (d.precipitation_sum[todayIdx] || 0) : 0;
+
+  // Main line: now + high/low
+  let main = temp + '°C';
+  if (tmax != null && tmin != null) {
+    main = temp + '°C';
+  }
+  document.getElementById('ssTodayMain').textContent = main;
+
+  let todaySub = '';
+  if (tmax != null && tmin != null) {
+    todaySub = 'Υψηλή ' + Math.round(tmax) + '°C · Χαμηλή ' + Math.round(tmin) + '°C';
+  }
+  todaySub += (todaySub ? ' · ' : '') + wtxt;
+  todaySub += ' · Αισθητή ' + feels + '° · Άνεμος ' + wind + ' km/h · Υγρασία ' + hum + '%';
+  if (rainToday > 0.1) todaySub += ' · Υετός ~' + (+rainToday).toFixed(1) + ' mm';
+  else todaySub += ' · Χωρίς αξιόλογο υετό';
+  document.getElementById('ssTodaySub').textContent = todaySub;
+
+  // Condition chips: frost, snow, fog, etc.
+  const chips = describeConditions(c, d, todayIdx);
+  const condEl = document.getElementById('ssConds');
+  if (condEl) {
+    condEl.innerHTML = chips.map(ch =>
+      '<span class="ss-chip ' + ch.cls + '">' + ch.text + '</span>'
+    ).join('');
+  }
+
+  // Risk
+  const riskCard = document.getElementById('ssRiskCard');
+  riskCard.className = 'ss-card';
+  if (risk.score >= 60) riskCard.classList.add('risk-ext');
+  else if (risk.score >= 35) riskCard.classList.add('risk-high');
+  else if (risk.score >= 18) riskCard.classList.add('risk-mod');
+  else riskCard.classList.add('risk-low');
+
+  document.getElementById('ssRiskMain').textContent = risk.level;
+  let riskSub = 'Βαθμολογία ' + risk.score + '/100 · ' + p.basin;
+  if (risk.sum12 > 0.2) riskSub += ' · Υετός 12ω: ' + risk.sum12 + ' mm';
+  else riskSub += ' · Χωρίς σημαντικό υετό τις επόμενες ώρες';
+  if (risk.past7 > 5) riskSub += ' · Ιστορικό 7ημ: ' + risk.past7 + ' mm';
+  // frost note in risk if relevant
+  if (tmin != null && tmin <= 0) riskSub += ' · Προσοχή παγετό το πρωί';
+  document.getElementById('ssRiskSub').textContent = riskSub;
+
+  // 7 days
+  const daysBox = document.getElementById('ssDays');
+  let weekRain = 0, weekMax = -99, weekMin = 99, html = '';
+  const start = todayIdx;
+  const end = Math.min(start + 7, d.time.length);
+  for (let i = start; i < end; i++) {
+    const mx = d.temperature_2m_max[i];
+    const mn = d.temperature_2m_min[i];
+    const pr = d.precipitation_sum[i] || 0;
+    const wc = d.weather_code ? d.weather_code[i] : null;
+    weekRain += pr;
+    if (mx > weekMax) weekMax = mx;
+    if (mn < weekMin) weekMin = mn;
+    const label = (i === start) ? 'Σήμ' : dayNameShort(d.time[i]);
+    const rainCls = pr > 0.5 ? 'rain' : 'p';
+    let extra = '';
+    if (mn <= 0) extra = ' · παγετός';
+    if (wc != null && [71,72,73,74,75,77,85,86].includes(wc)) extra = ' · χιόνι';
+    if (wc != null && (wc === 45 || wc === 48)) extra = ' · ομίχλη';
+    html += '<div class="ss-day"><span>' + label + '</span><b>' + Math.round(mx) + '°/' + Math.round(mn) + '°</b><span class="' + rainCls + '">' + (pr > 0.05 ? (+pr).toFixed(1) + ' mm' : '—') + extra + '</span></div>';
+  }
+  daysBox.innerHTML = html;
+  document.getElementById('ssWeekMain').textContent = Math.round(weekMin) + '° έως ' + Math.round(weekMax) + '°';
+  let weekSub = weekRain < 0.5 ? 'Σχεδόν χωρίς υετό συνολικά' : 'Συνολικός υετός ~' + weekRain.toFixed(1) + ' mm';
+  if (weekMin <= 0) weekSub += ' · Παγετός σε κάποιες νύχτες';
+  document.getElementById('ssWeekSub').textContent = weekSub;
+}
+
+
 async function fetchWeather(idx) {
   const p = places[idx];
   // past_days=3 → 3 historical + forecast days
@@ -788,7 +1177,14 @@ function renderAll(idx, data) {
   }
 
   map.setView([p.lat, p.lon], 10);
+  // update selected marker with full risk, then refresh others in background
+  const selRisk = computeFloodRisk(h, d, p.sensitivity);
+  renderSimpleSummary(idx, data, selRisk);
+  updateMarker(idx, selRisk, c);
   markers[idx].openPopup();
+  // soft refresh other points (non-blocking)
+  refreshAllMapRisks();
+  loadModelsComparison(idx);
 }
 
 function onLocationChange() {
