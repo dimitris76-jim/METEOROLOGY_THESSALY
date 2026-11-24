@@ -113,6 +113,21 @@ button.active{background:#2a6b4a;border-color:#3d8f62}
 .ss-chip.snow{border-color:#6a8aaa;color:#d0e8ff}
 .ss-chip.rain{border-color:#2a5a8a;color:#6ab0e8}
 
+.hydro-pin{
+  width:14px;height:14px;border-radius:3px;background:#3d8bfd;
+  border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4);
+}
+.hydro-links a{color:var(--cyan);font-size:12px;display:inline-block;margin:4px 10px 4px 0}
+.hydro-links{margin-top:8px;line-height:1.6}
+
+.ss-wl{margin-top:8px;font-size:12px;line-height:1.5;color:var(--text)}
+.ss-wl b{color:var(--cyan)}
+.ss-wl .wl-item{display:inline-block;margin:2px 8px 2px 0;padding:2px 8px;background:#0a1a2c;border:1px solid #29445f;border-radius:6px}
+.ss-wl .wl-up{color:var(--risk-high)}
+.ss-wl .wl-ok{color:var(--risk-low)}
+
+
+
 
 
 .models-wrap{overflow-x:auto}
@@ -213,6 +228,7 @@ button.active{background:#2a6b4a;border-color:#3d8f62}
         <div class="label">Κίνδυνος πλημμύρας</div>
         <div class="main" id="ssRiskMain">—</div>
         <div class="sub" id="ssRiskSub">Φόρτωση…</div>
+        <div class="ss-wl" id="ssWaterLevel">Στάθμη ποταμών: φόρτωση…</div>
       </div>
       <div class="ss-card" id="ssWeek">
         <div class="label">Επόμενες 7 ημέρες</div>
@@ -271,6 +287,7 @@ button.active{background:#2a6b4a;border-color:#3d8f62}
           <div class="row"><i style="background:var(--risk-mod)"></i> Μέτριος</div>
           <div class="row"><i style="background:var(--risk-high)"></i> Υψηλός</div>
           <div class="row"><i style="background:var(--risk-ext)"></i> Πολύ υψηλός</div>
+          <div class="row" style="margin-top:4px"><i style="background:#3d8bfd;border-radius:3px"></i> Σταθμός ΕΛΚΕΘΕ</div>
           <div class="row" style="margin-top:4px;color:var(--muted)">Κλικ = επιλογή · μέγεθος ≈ score</div>
         </div>
         <div class="maptag">OpenStreetMap · Radar: RainViewer · Δεδομένα: Open-Meteo</div>
@@ -354,6 +371,7 @@ button.active{background:#2a6b4a;border-color:#3d8f62}
             <div class="risk-factor"><div class="flab">Ευαισθησία λεκάνης</div><div class="fval" id="rfSens">—</div></div>
             <div class="risk-factor"><div class="flab">Εποχιακός συντελεστής</div><div class="fval" id="rfSeason">—</div></div>
             <div class="risk-factor"><div class="flab">Συνδυασμένος (λεκάνη×εποχή)</div><div class="fval" id="rfCombined">—</div></div>
+            <div class="risk-factor" style="grid-column:1/-1"><div class="flab">Στάθμη ΕΛΚΕΘΕ (Θεσσαλία)</div><div class="fval" id="rfHydro" style="font-size:12px;font-weight:600">—</div></div>
           </div>
           <div class="risk-legend">
             <span><i style="background:var(--risk-low)"></i> Χαμηλός 0–17</span>
@@ -365,6 +383,12 @@ button.active{background:#2a6b4a;border-color:#3d8f62}
             Κατώφλια ανά λεκάνη: Πηνειός / Καράμπαλης πιο ευαίσθητα (×1.20–1.40). Εποχιακή προσαρμογή ενεργή.
             Ιστορικό 7 ημερών για κορεσμό. <span id="rfSeasonNote"></span>
             <b>Πειραματικός — όχι επίσημη προειδοποίηση.</b>
+            <div class="hydro-links">
+              <b>Υδρολογικοί σταθμοί ΕΛΚΕΘΕ:</b><br>
+              <a href="https://hydro-stations.hcmr.gr/%CF%80%CE%BF%CF%83%CE%BF%CF%83%CF%84%CE%B7%CE%BC%CF%8C%CF%81%CE%B9%CE%B1-%CF%83%CF%84%CE%AC%CE%B8%CE%BC%CE%B7%CF%82-%CE%BA%CE%B1%CE%B9-%CE%B2%CF%81%CE%BF%CF%87%CE%AE%CF%82/" target="_blank" rel="noopener">Ποσοστημόρια στάθμης &amp; βροχής</a>
+              <a href="https://hydro-stations.hcmr.gr/water-level-change/" target="_blank" rel="noopener">Μεταβολή στάθμης</a>
+              <a href="https://hydro-stations.hcmr.gr/" target="_blank" rel="noopener">Χάρτης σταθμών</a>
+            </div>
           </div>
         </div>
       </div>
@@ -506,6 +530,124 @@ function getSeasonal() {
 
 
 
+
+// Βασικοί υδρολογικοί σταθμοί ΕΛΚΕΘΕ στη Θεσσαλία / λεκάνη Πηνειού
+const HYDRO_STATIONS = [
+  { name: 'Flamouli', lat: 39.5265, lon: 21.7696, type: 'Στάθμη' },
+  { name: 'Enipeas', lat: 39.5635, lon: 22.0802, type: 'Στάθμη' },
+  { name: 'Farsaliotis', lat: 39.3843, lon: 22.1548, type: 'Στάθμη' },
+  { name: 'Kalentzis', lat: 39.3779, lon: 21.951, type: 'Στάθμη' },
+  { name: 'Koutsochero', lat: 39.6171, lon: 22.216, type: 'Στάθμη' },
+  { name: 'Parapotamos', lat: 39.5304, lon: 21.7055, type: 'Στάθμη' },
+  { name: 'Theopetra', lat: 39.6748, lon: 21.6788, type: 'Στάθμη' },
+  { name: 'Vasili', lat: 39.3325, lon: 22.3872, type: 'Στάθμη' },
+  { name: 'Nomi (Πηνειός)', lat: 39.5266, lon: 21.9383, type: 'Πηνειός' },
+  { name: 'Tempi', lat: 39.8968, lon: 22.6152, type: 'Πηνειός' },
+  { name: 'Titarisios', lat: 39.7162, lon: 22.1884, type: 'Παραπόταμος' },
+  { name: 'Lithaios', lat: 39.5523, lon: 21.7707, type: 'Βάθος' },
+  { name: 'Pineios diver', lat: 39.6707, lon: 22.4483, type: 'Βάθος' },
+  { name: 'Raxa Meteo', lat: 39.615, lon: 21.7437, type: 'Μετεωρολογικός' }
+];
+
+let hydroLayer = null;
+
+function hydroIcon() {
+  return L.divIcon({
+    className: '',
+    html: '<div class="hydro-pin" title="Υδρολογικός σταθμός"></div>',
+    iconSize: [14, 14],
+    iconAnchor: [7, 7],
+    popupAnchor: [0, -8]
+  });
+}
+
+function addHydroStations() {
+  if (hydroLayer) { map.removeLayer(hydroLayer); }
+  hydroLayer = L.layerGroup();
+  HYDRO_STATIONS.forEach(s => {
+    const m = L.marker([s.lat, s.lon], { icon: hydroIcon() });
+    let html = '<b>' + s.name + '</b><br><small>ΕΛΚΕΘΕ · ' + s.type + '</small>';
+    html += '<br><a href="https://hydro-stations.hcmr.gr/" target="_blank" rel="noopener">Χάρτης σταθμών</a>';
+    html += '<br><a href="https://hydro-stations.hcmr.gr/water-level-change/" target="_blank" rel="noopener">Μεταβολή στάθμης</a>';
+    html += '<br><a href="https://hydro-stations.hcmr.gr/%CF%80%CE%BF%CF%83%CE%BF%CF%83%CF%84%CE%B7%CE%BC%CF%8C%CF%81%CE%B9%CE%B1-%CF%83%CF%84%CE%AC%CE%B8%CE%BC%CE%B7%CF%82-%CE%BA%CE%B1%CE%B9-%CE%B2%CF%81%CE%BF%CF%87%CE%AE%CF%82/" target="_blank" rel="noopener">Ποσοστημόρια</a>';
+    m.bindPopup(html);
+    hydroLayer.addLayer(m);
+  });
+  hydroLayer.addTo(map);
+}
+
+
+
+// Σταθμοί Θεσσαλίας που παρακολουθούμε για στάθμη
+const HYDRO_WATCH = ['Nomi', 'Tempi', 'Lithaios', 'Enipeas', 'Flamouli', 'Koutsochero', 'Theopetra', 'Farsaliotis', 'Kalentzis', 'Parapotamos', 'Vasili', 'Titarisios', 'Pineios', 'Dialexto'];
+let lastHydroCache = null;
+
+async function fetchHydroLevels() {
+  const el = document.getElementById('ssWaterLevel');
+  const el2 = document.getElementById('rfHydro');
+  try {
+    const body = new URLSearchParams({
+      action: 'ajax_responce_hook_hs_map',
+      pins: 'false',
+      vars: 'true',
+      var: 'water_level',
+      map: 'last'
+    });
+    const res = await fetch('https://hydro-stations.hcmr.gr/wp-admin/admin-ajax.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: body.toString()
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    if (!Array.isArray(data)) throw new Error('bad payload');
+
+    // Filter Thessaly-ish + watched names
+    const rows = data.filter(s => {
+      const lat = parseFloat(s.latitude), lon = parseFloat(s.longitude);
+      const inBox = lat >= 38.9 && lat <= 40.2 && lon >= 20.8 && lon <= 23.5;
+      const nameHit = HYDRO_WATCH.some(w => (s.name || '').toLowerCase().includes(w.toLowerCase()));
+      return inBox && s.vars && s.vars.water_level != null && (nameHit || s.is_wl === '1' || s.is_depth === '1');
+    });
+
+    // Prefer watched names, limit 8
+    rows.sort((a, b) => {
+      const as = HYDRO_WATCH.findIndex(w => a.name.toLowerCase().includes(w.toLowerCase()));
+      const bs = HYDRO_WATCH.findIndex(w => b.name.toLowerCase().includes(w.toLowerCase()));
+      return (as < 0 ? 99 : as) - (bs < 0 ? 99 : bs);
+    });
+    const top = rows.slice(0, 8);
+    lastHydroCache = top;
+
+    if (!top.length) {
+      const msg = 'Δεν βρέθηκαν στάθμες Θεσσαλίας αυτή τη στιγμή.';
+      if (el) el.textContent = msg;
+      if (el2) el2.textContent = msg;
+      return top;
+    }
+
+    const chips = top.map(s => {
+      const wl = parseFloat(s.vars.water_level);
+      const t = s.vars.lastdate || '';
+      const timeShort = t ? t.slice(11, 16) : '';
+      const cls = wl >= 2 ? 'wl-up' : 'wl-ok';
+      return '<span class="wl-item ' + cls + '"><b>' + s.name + '</b> ' + wl.toFixed(2) + ' m' + (timeShort ? ' <small>(' + timeShort + ')</small>' : '') + '</span>';
+    }).join(' ');
+
+    const html = 'Στάθμη τώρα: ' + chips;
+    if (el) el.innerHTML = html;
+    if (el2) el2.innerHTML = top.map(s => s.name + ': ' + parseFloat(s.vars.water_level).toFixed(2) + ' m').join(' · ');
+    return top;
+  } catch (e) {
+    console.warn('hydro levels', e);
+    const msg = 'Στάθμη: μη διαθέσιμη τώρα (CORS/δίκτυο). Δείτε <a href="https://hydro-stations.hcmr.gr/water-level-change/" target="_blank" rel="noopener">ΕΛΚΕΘΕ</a>';
+    if (el) el.innerHTML = msg;
+    if (el2) el2.innerHTML = 'Άνοιξε hydro-stations.hcmr.gr';
+    return null;
+  }
+}
+
+
 let map, markers = [], markerMeta = [], currentIdx = 0, autoTimer = null, lastData = null, allRiskCache = {};
 let radarLayer = null, radarOn = false, radarHost = null;
 let radarFrames = [], radarFrameIdx = 0, radarPlayTimer = null;
@@ -540,7 +682,7 @@ function makeRiskIcon(score, selected) {
 function initMap() {
   map = L.map('map', { scrollWheelZoom: true }).setView([39.55, 22.15], 8);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 18, attribution: '&copy; OpenStreetMap'
+    maxZoom: 18, maxNativeZoom: 19, attribution: '&copy; OpenStreetMap'
   }).addTo(map);
   places.forEach((p, i) => {
     const m = L.marker([p.lat, p.lon], { icon: makeRiskIcon(null, i === currentIdx) }).addTo(map);
@@ -552,6 +694,7 @@ function initMap() {
     markers.push(m);
     markerMeta.push({ idx: i });
   });
+  addHydroStations();
 }
 function resetMap() { map.setView([39.55, 22.15], 8); }
 
@@ -739,7 +882,7 @@ function renderFloodRisk(risk) {
   document.getElementById('rfAccum5').textContent = risk.accum5 + ' mm';
   document.getElementById('mRisk').textContent = risk.level;
   document.getElementById('mRisk').style.color = risk.color;
-  document.getElementById('mRiskSub').textContent = risk.score + '/100 · ' + risk.label + ' · ' + risk.seasonName;
+  document.getElementById('mRiskSub').textContent = risk.score + '/100 · ' + risk.label + ' · ' + risk.seasonName + ' · ' + new Date().toLocaleTimeString('el-GR', {hour:'2-digit',minute:'2-digit'});
   document.getElementById('mRiskCard').style.borderColor = risk.color;
 
   // Historical bar chart (past 7 days + today)
@@ -773,7 +916,13 @@ function showRadarFrame(idx) {
   const url = radarHost + frame.path + '/256/{z}/{x}/{y}/2/1_1.png';
   if (radarLayer) map.removeLayer(radarLayer);
   radarLayer = L.tileLayer(url, {
-    opacity: 0.65, maxZoom: 10, attribution: 'Radar &copy; RainViewer'
+    opacity: 0.65,
+    // RainViewer free tiles: native zoom roughly 1–7; beyond that tiles fail
+    maxZoom: 18,
+    maxNativeZoom: 7,
+    minZoom: 1,
+    errorTileUrl: 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==',
+    attribution: 'Radar &copy; RainViewer'
   }).addTo(map);
   const t = new Date(frame.time * 1000);
   document.getElementById('radarTs').textContent = t.toLocaleTimeString('el-GR', { hour:'2-digit', minute:'2-digit' });
@@ -1044,12 +1193,13 @@ function renderSimpleSummary(idx, data, risk) {
   else riskCard.classList.add('risk-low');
 
   document.getElementById('ssRiskMain').textContent = risk.level;
+  const updatedAt = new Date().toLocaleTimeString('el-GR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
   let riskSub = 'Βαθμολογία ' + risk.score + '/100 · ' + p.basin;
   if (risk.sum12 > 0.2) riskSub += ' · Υετός 12ω: ' + risk.sum12 + ' mm';
   else riskSub += ' · Χωρίς σημαντικό υετό τις επόμενες ώρες';
   if (risk.past7 > 5) riskSub += ' · Ιστορικό 7ημ: ' + risk.past7 + ' mm';
-  // frost note in risk if relevant
   if (tmin != null && tmin <= 0) riskSub += ' · Προσοχή παγετό το πρωί';
+  riskSub += ' · Ενημέρωση ' + updatedAt;
   document.getElementById('ssRiskSub').textContent = riskSub;
 
   // 7 days
@@ -1142,7 +1292,9 @@ function renderAll(idx, data) {
   const wc = WMO[c.weather_code] || ['❓', 'Άγνωστο'];
   document.getElementById('cCode').innerHTML = '<span class="wcode">'+wc[0]+'</span> <small>'+wc[1]+'</small>';
 
-  renderFloodRisk(computeFloodRisk(h, d, places[idx].sensitivity));
+  const floodRisk = computeFloodRisk(h, d, places[idx].sensitivity);
+  renderFloodRisk(floodRisk);
+  renderSimpleSummary(idx, data, floodRisk);
 
   // Hourly next 12
   const box = document.getElementById('hourlyBox');
@@ -1178,13 +1330,12 @@ function renderAll(idx, data) {
 
   map.setView([p.lat, p.lon], 10);
   // update selected marker with full risk, then refresh others in background
-  const selRisk = computeFloodRisk(h, d, p.sensitivity);
-  renderSimpleSummary(idx, data, selRisk);
-  updateMarker(idx, selRisk, c);
+  updateMarker(idx, floodRisk, c);
   markers[idx].openPopup();
   // soft refresh other points (non-blocking)
   refreshAllMapRisks();
   loadModelsComparison(idx);
+  fetchHydroLevels();
 }
 
 function onLocationChange() {
